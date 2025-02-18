@@ -1,3 +1,7 @@
+// Copyright (C) NHR@FAU, University Erlangen-Nuremberg.
+// All rights reserved. This file is part of cc-lib.
+// Use of this source code is governed by a MIT-style
+// license that can be found in the LICENSE file.
 package ccmessage
 
 import (
@@ -5,20 +9,16 @@ import (
 	"time"
 )
 
-type CCEvent interface {
-	CCMessage
-}
-
 func NewEvent(name string,
 	tags map[string]string,
 	meta map[string]string,
 	event string,
 	tm time.Time,
-) (CCEvent, error) {
+) (CCMessage, error) {
 	return NewMessage(name, tags, meta, map[string]interface{}{"event": event}, tm)
 }
 
-func IsEvent(m CCEvent) bool {
+func (m *ccMessage) IsEvent() bool {
 	if v, ok := m.GetField("event"); ok {
 		if reflect.TypeOf(v) == reflect.TypeOf("string") {
 			return true
@@ -27,12 +27,8 @@ func IsEvent(m CCEvent) bool {
 	return false
 }
 
-func IsEventMessage(m CCMessage) bool {
-	return IsEvent(m)
-}
-
-func GetEventValue(m CCMetric) string {
-	if IsEvent(m) {
+func (m *ccMessage) GetEventValue() string {
+	if m.IsEvent() {
 		if v, ok := m.GetField("event"); ok {
 			return v.(string)
 		}
