@@ -1,3 +1,7 @@
+// Copyright (C) NHR@FAU, University Erlangen-Nuremberg.
+// All rights reserved. This file is part of cc-lib.
+// Use of this source code is governed by a MIT-style
+// license that can be found in the LICENSE file.
 package ccmessage
 
 import (
@@ -19,7 +23,6 @@ func TestJSONEncode(t *testing.T) {
 		return
 	}
 	t.Log(string(x))
-
 }
 
 func TestJSONDecode(t *testing.T) {
@@ -31,7 +34,7 @@ func TestJSONDecode(t *testing.T) {
 		t.Error(err.Error())
 		return
 	}
-	//t.Log(list)
+	// t.Log(list)
 	for _, m := range list {
 		t.Log(m.Name())
 	}

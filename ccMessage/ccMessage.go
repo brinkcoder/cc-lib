@@ -1,3 +1,7 @@
+// Copyright (C) NHR@FAU, University Erlangen-Nuremberg.
+// All rights reserved. This file is part of cc-lib.
+// Use of this source code is governed by a MIT-style
+// license that can be found in the LICENSE file.
 package ccmessage
 
 import (
@@ -22,9 +26,12 @@ const (
 	CCMSG_TYPE_LOG
 	CCMSG_TYPE_CONTROL
 )
-const MIN_CCMSG_TYPE = CCMSG_TYPE_METRIC
-const MAX_CCMSG_TYPE = CCMSG_TYPE_CONTROL
-const CCMSG_TYPE_INVALID = MAX_CCMSG_TYPE + 1
+
+const (
+	MIN_CCMSG_TYPE     = CCMSG_TYPE_METRIC
+	MAX_CCMSG_TYPE     = CCMSG_TYPE_CONTROL
+	CCMSG_TYPE_INVALID = MAX_CCMSG_TYPE + 1
+)
 
 // Most functions are derived from github.com/influxdata/line-protocol/metric.go
 // The metric type is extended with an extra meta information list re-using the Tag
@@ -41,7 +48,7 @@ type ccMessage struct {
 
 type ccMessageJSON struct {
 	Name string `json:"name"` // Measurement name
-	//Meta   map[string]string      `json:"meta,omitempty"` // map of meta data tags
+	// Meta   map[string]string      `json:"meta,omitempty"` // map of meta data tags
 	Tags   map[string]string      `json:"tags"`      // map of of tags
 	Fields map[string]interface{} `json:"fields"`    // map of of fields
 	Tm     time.Time              `json:"timestamp"` // timestamp
@@ -79,7 +86,10 @@ type CCMessage interface {
 	String() string                                   // Return line-protocol like string
 
 	MessageType() CCMessageType // Return message type
-	//Validate(hostnameTag string) bool // Validate that it is a valid CCMessage
+	IsMetric() bool
+	GetMetricValue() interface{}
+	IsLog() bool
+	GetLogValue() string
 }
 
 // String implements the stringer interface for data type ccMessage
@@ -105,7 +115,6 @@ func (m *ccMessage) ToPoint(metaAsTags map[string]bool) (p *write.Point) {
 
 // ToLineProtocol generates influxDB line protocol for data type ccMessage
 func (m *ccMessage) ToLineProtocol(metaAsTags map[string]bool) string {
-
 	return write.PointToLineProtocol(
 		m.ToPoint(metaAsTags),
 		time.Nanosecond,
@@ -121,7 +130,7 @@ func (m *ccMessage) ToJSON(metaAsTags map[string]bool) (json.RawMessage, error) 
 		Name: m.name,
 		Tm:   m.tm,
 		Tags: maps.Clone(m.tags),
-		//Meta:   make(map[string]string, metalen),
+		// Meta:   make(map[string]string, metalen),
 		Fields: maps.Clone(m.fields),
 	}
 	for k := range metaAsTags {
@@ -265,7 +274,6 @@ func NewMessage(
 
 // FromMetric copies the metric <other>
 func FromMessage(other CCMessage) CCMessage {
-
 	return &ccMessage{
 		name:   other.Name(),
 		tags:   maps.Clone(other.Tags()),

@@ -18,14 +18,14 @@ func generate_message_lists(num_lists, num_entries int) ([][]lp.CCMessage, error
 		for i := 0; i < num_entries; i++ {
 			var x lp.CCMessage
 			var err error = nil
-			switch {
-			case i%4 == 0:
+			switch i % 4 {
+			case 0:
 				x, err = lp.NewEvent("myevent", map[string]string{"type": "socket", "type-id": "0"}, map[string]string{}, "nothing happend", time.Now())
-			case i%4 == 1:
+			case 1:
 				x, err = lp.NewMetric("mymetric", map[string]string{"type": "socket", "type-id": "0"}, map[string]string{"unit": "kByte"}, 12.145, time.Now())
-			case i%4 == 2:
+			case 2:
 				x, err = lp.NewLog("mylog", map[string]string{"type": "socket", "type-id": "0"}, map[string]string{}, "disk status: OK", time.Now())
-			case i%4 == 3:
+			case 3:
 				x, err = lp.NewGetControl("mycontrol", map[string]string{"type": "socket", "type-id": "0"}, map[string]string{}, time.Now())
 			}
 			if err == nil {

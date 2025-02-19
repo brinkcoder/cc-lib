@@ -1,3 +1,7 @@
+// Copyright (C) NHR@FAU, University Erlangen-Nuremberg.
+// All rights reserved. This file is part of cc-lib.
+// Use of this source code is governed by a MIT-style
+// license that can be found in the LICENSE file.
 package ccmessage
 
 import (
@@ -5,15 +9,11 @@ import (
 	"time"
 )
 
-type CCControl interface {
-	CCMessage
-}
-
 func NewGetControl(name string,
 	tags map[string]string,
 	meta map[string]string,
 	tm time.Time,
-) (CCControl, error) {
+) (CCMessage, error) {
 	m, err := NewMessage(name, tags, meta, map[string]interface{}{"control": ""}, tm)
 	if err == nil {
 		m.AddTag("method", "GET")
@@ -26,7 +26,7 @@ func NewPutControl(name string,
 	meta map[string]string,
 	value string,
 	tm time.Time,
-) (CCControl, error) {
+) (CCMessage, error) {
 	m, err := NewMessage(name, tags, meta, map[string]interface{}{"control": value}, tm)
 	if err == nil {
 		m.AddTag("method", "PUT")
@@ -34,7 +34,7 @@ func NewPutControl(name string,
 	return m, err
 }
 
-func IsControl(m CCControl) bool {
+func (m *ccMessage) IsControl() bool {
 	if v, ok := m.GetField("control"); ok {
 		if me, ok := m.GetTag("method"); ok {
 			if reflect.TypeOf(v) == reflect.TypeOf("string") && (me == "PUT" || me == "GET") {
@@ -45,12 +45,12 @@ func IsControl(m CCControl) bool {
 	return false
 }
 
-func IsControlMessage(m CCMessage) bool {
-	return IsControl(m)
+func (m *ccMessage) IsControlMessage() bool {
+	return m.IsControl()
 }
 
-func GetControlValue(m CCControl) string {
-	if IsControl(m) {
+func (m *ccMessage) GetControlValue() string {
+	if m.IsControl() {
 		if v, ok := m.GetField("control"); ok {
 			return v.(string)
 		}
@@ -58,8 +58,8 @@ func GetControlValue(m CCControl) string {
 	return ""
 }
 
-func GetControlMethod(m CCControl) string {
-	if IsControl(m) {
+func (m *ccMessage) GetControlMethod() string {
+	if m.IsControl() {
 		if v, ok := m.GetTag("method"); ok {
 			return v
 		}

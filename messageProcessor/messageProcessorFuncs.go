@@ -28,7 +28,7 @@ func moveInMessage(message lp2.CCMessage, params *map[string]interface{}, checks
 		// cclog.ComponentDebug("MessageProcessor", "Move from", from, "to", to)
 		if value.(bool) {
 			var v string
-			var ok bool = false
+			ok := false
 			switch from {
 			case MESSAGE_LOCATION_TAGS:
 				// cclog.ComponentDebug("MessageProcessor", "Getting tag key", data.Key)

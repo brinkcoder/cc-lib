@@ -178,7 +178,7 @@ func sanitizeExprString(key string) string {
 	return strings.ReplaceAll(key, "type-id", "typeid")
 }
 
-func getParamMap(point lp.CCMetric) map[string]interface{} {
+func getParamMap(point lp.CCMessage) map[string]interface{} {
 	params := paramMapPool.Get().(map[string]interface{})
 	params["message"] = point
 	params["msg"] = point
@@ -772,7 +772,7 @@ func (mp *messageProcessor) ProcessMetric(metric lplegacy.CCMetric) (lp.CCMessag
 
 func (mp *messageProcessor) ProcessMessage(m lp.CCMessage) (lp.CCMessage, error) {
 	var err error = nil
-	var out lp.CCMessage = lp.FromMessage(m)
+	out := lp.FromMessage(m)
 
 	name := out.Name()
 
@@ -941,7 +941,7 @@ func (mp *messageProcessor) ProcessMessage(m lp.CCMessage) (lp.CCMessage, error)
 		case STAGENAME_NORMALIZE_UNIT:
 			if mp.normalizeUnits {
 				// cclog.ComponentDebug("MessageProcessor", "Normalize units")
-				if lp.IsMetric(out) {
+				if out.IsMetric() {
 					_, err := normalizeUnits(out)
 					if err != nil {
 						return out, fmt.Errorf("failed to evaluate: %v", err.Error())
@@ -954,7 +954,7 @@ func (mp *messageProcessor) ProcessMessage(m lp.CCMessage) (lp.CCMessage, error)
 		case STAGENAME_CHANGE_UNIT_PREFIX:
 			if len(mp.changeUnitPrefix) > 0 {
 				// cclog.ComponentDebug("MessageProcessor", "Change unit prefix")
-				if lp.IsMetric(out) {
+				if out.IsMetric() {
 					_, err := changeUnitPrefix(out, &params, &mp.changeUnitPrefix)
 					if err != nil {
 						return out, fmt.Errorf("failed to evaluate: %v", err.Error())
