@@ -90,6 +90,8 @@ type CCMessage interface {
 	GetMetricValue() interface{}
 	IsLog() bool
 	GetLogValue() string
+	IsEvent() bool
+	GetEventValue() string
 }
 
 // String implements the stringer interface for data type ccMessage
