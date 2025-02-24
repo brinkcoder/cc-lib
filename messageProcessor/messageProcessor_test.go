@@ -157,7 +157,7 @@ var test_configs = []Configs{
 	},
 	{
 		name:   "add_field",
-		config: json.RawMessage(`{"add_fields_if": [{"if": "name == 'net_bytes_in'", "key" : "myfield", "value" : "example"}]}`),
+		config: json.RawMessage(`{"add_field_if": [{"if": "name == 'net_bytes_in'", "key" : "myfield", "value" : "example"}]}`),
 		check: func(msg lp.CCMessage) error {
 			if !msg.HasField("myfield") {
 				return errors.New("expected new tag 'source' but not present")
@@ -166,8 +166,8 @@ var test_configs = []Configs{
 		},
 	},
 	{
-		name:   "delete_fields_if_protected",
-		config: json.RawMessage(`{"delete_fields_if": [{"if": "name == 'net_bytes_in'", "key" : "value"}]}`),
+		name:   "delete_field_if_protected",
+		config: json.RawMessage(`{"delete_field_if": [{"if": "name == 'net_bytes_in'", "key" : "value"}]}`),
 		errors: true,
 		check: func(msg lp.CCMessage) error {
 			if !msg.HasField("value") {
@@ -177,8 +177,8 @@ var test_configs = []Configs{
 		},
 	},
 	{
-		name:   "delete_fields_if_unprotected",
-		config: json.RawMessage(`{"delete_fields_if": [{"if": "name == 'net_bytes_in'", "key" : "testfield"}]}`),
+		name:   "delete_field_if_unprotected",
+		config: json.RawMessage(`{"delete_field_if": [{"if": "name == 'net_bytes_in'", "key" : "testfield"}]}`),
 		check: func(msg lp.CCMessage) error {
 			if msg.HasField("testfield") {
 				return errors.New("expected to still have 'testfield' field but should be deleted")
@@ -303,7 +303,9 @@ var test_configs = []Configs{
 func TestConfigList(t *testing.T) {
 	for _, c := range test_configs {
 		t.Run(c.name, func(t *testing.T) {
-			m, err := lp.NewMetric("net_bytes_in", map[string]string{"type": "node", "type-id": "0"}, map[string]string{"unit": "Byte"}, float64(1024.0), time.Now())
+			m, err := lp.NewMetric("net_bytes_in",
+				map[string]string{"type": "node", "type-id": "0"},
+				map[string]string{"unit": "Byte"}, float64(1024.0), time.Now())
 			if err != nil {
 				t.Error(err.Error())
 				return
@@ -325,7 +327,6 @@ func TestConfigList(t *testing.T) {
 				t.Error(err.Error())
 				return
 			}
-			// t.Log(m.ToLineProtocol(nil))
 			out, err := mp.ProcessMessage(m)
 			if err != nil && !c.errors {
 				cclog.SetDebug()
@@ -340,16 +341,7 @@ func TestConfigList(t *testing.T) {
 				t.Error("fail, message should be dropped but processor signalled NO dropping")
 				return
 			}
-			// {
-			// 	if c.drop {
-			// 		t.Error("fail, message should be dropped but processor signalled NO dropping")
-			// 	} else {
-			// 		t.Error("fail, message should NOT be dropped but processor signalled dropping")
-			// 	}
-			// 	cclog.SetDebug()
-			// 	mp.ProcessMessage(m)
-			// 	return
-			// }
+
 			if c.check != nil {
 				if err := c.check(out); err != nil {
 					t.Errorf("check failed with %v", err.Error())

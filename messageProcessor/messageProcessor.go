@@ -8,7 +8,6 @@ import (
 
 	cclog "github.com/ClusterCockpit/cc-lib/ccLogger"
 	lp "github.com/ClusterCockpit/cc-lib/ccMessage"
-	lplegacy "github.com/ClusterCockpit/cc-lib/ccMetric"
 
 	"github.com/expr-lang/expr"
 	"github.com/expr-lang/expr/vm"
@@ -117,7 +116,6 @@ type MessageProcessor interface {
 	// Read in a JSON configuration
 	FromConfigJSON(config json.RawMessage) error
 	// Processing functions for legacy CCMetric and current CCMessage
-	ProcessMetric(m lplegacy.CCMetric) (lp.CCMessage, error)
 	ProcessMessage(m lp.CCMessage) (lp.CCMessage, error)
 	// EvalToBool(condition string, parameters map[string]interface{}) (bool, error)
 	// EvalToFloat64(condition string, parameters map[string]interface{}) (float64, error)
@@ -756,20 +754,6 @@ func (mp *messageProcessor) FromConfigJSON(config json.RawMessage) error {
 	return nil
 }
 
-func (mp *messageProcessor) ProcessMetric(metric lplegacy.CCMetric) (lp.CCMessage, error) {
-	m, err := lp.NewMessage(
-		metric.Name(),
-		metric.Tags(),
-		metric.Meta(),
-		metric.Fields(),
-		metric.Time(),
-	)
-	if err != nil {
-		return m, fmt.Errorf("failed to parse metric to message: %v", err.Error())
-	}
-	return mp.ProcessMessage(m)
-}
-
 func (mp *messageProcessor) ProcessMessage(m lp.CCMessage) (lp.CCMessage, error) {
 	var err error = nil
 	out := lp.FromMessage(m)
@@ -844,7 +828,7 @@ func (mp *messageProcessor) ProcessMessage(m lp.CCMessage) (lp.CCMessage, error)
 			}
 		case STAGENAME_ADD_TAG:
 			if len(mp.addTagsIf) > 0 {
-				// cclog.ComponentDebug("MessageProcessor", "Adding tags")
+				cclog.ComponentDebug("MessageProcessor", "Adding tags")
 				_, err = addTagIf(out, &params, &mp.addTagsIf)
 				if err != nil {
 					return out, fmt.Errorf("failed to evaluate: %v", err.Error())
