@@ -3,7 +3,6 @@ package sinks
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"sync"
 
 	cclog "github.com/ClusterCockpit/cc-lib/ccLogger"
@@ -11,6 +10,22 @@ import (
 )
 
 const SINK_MAX_FORWARD = 50
+
+type Sink interface {
+	Write(point lp.CCMessage) error // Write metric to the sink
+	Flush() error                   // Flush buffered metrics
+	Close()                         // Close / finish metric sink
+	Name() string                   // Name of the metric sink
+}
+
+// Sink manager access functions
+type SinkManager interface {
+	Init(wg *sync.WaitGroup, sinkConfig json.RawMessage) error
+	AddInput(input chan lp.CCMessage)
+	AddOutput(name string, config json.RawMessage) error
+	Start()
+	Close()
+}
 
 // Map of all available sinks
 var AvailableSinks = map[string]func(name string, config json.RawMessage) (Sink, error){
@@ -32,41 +47,19 @@ type sinkManager struct {
 	maxForward int               // number of metrics to write maximally in one iteration
 }
 
-// Sink manager access functions
-type SinkManager interface {
-	Init(wg *sync.WaitGroup, sinkConfigFile string) error
-	AddInput(input chan lp.CCMessage)
-	AddOutput(name string, config json.RawMessage) error
-	Start()
-	Close()
-}
-
 // Init initializes the sink manager by:
 // * Reading its configuration file
 // * Adding the configured sinks and providing them with the corresponding config
-func (sm *sinkManager) Init(wg *sync.WaitGroup, sinkConfigFile string) error {
+func (sm *sinkManager) Init(wg *sync.WaitGroup, sinkConfig json.RawMessage) error {
 	sm.input = nil
 	sm.done = make(chan bool)
 	sm.wg = wg
 	sm.sinks = make(map[string]Sink, 0)
 	sm.maxForward = SINK_MAX_FORWARD
 
-	if len(sinkConfigFile) == 0 {
-		return nil
-	}
-
-	// Read sink config file
-	configFile, err := os.Open(sinkConfigFile)
-	if err != nil {
-		cclog.ComponentError("SinkManager", err.Error())
-		return err
-	}
-	defer configFile.Close()
-
 	// Parse config
-	jsonParser := json.NewDecoder(configFile)
 	var rawConfigs map[string]json.RawMessage
-	err = jsonParser.Decode(&rawConfigs)
+	err := json.Unmarshal(sinkConfig, (&rawConfigs))
 	if err != nil {
 		cclog.ComponentError("SinkManager", err.Error())
 		return err
@@ -174,9 +167,9 @@ func (sm *sinkManager) Close() {
 }
 
 // New creates a new initialized sink manager
-func New(wg *sync.WaitGroup, sinkConfigFile string) (SinkManager, error) {
+func New(wg *sync.WaitGroup, sinkConfig json.RawMessage) (SinkManager, error) {
 	sm := new(sinkManager)
-	err := sm.Init(wg, sinkConfigFile)
+	err := sm.Init(wg, sinkConfig)
 	if err != nil {
 		return nil, err
 	}

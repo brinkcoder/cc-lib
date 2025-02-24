@@ -21,13 +21,6 @@ type sink struct {
 	name         string              // Name of the sink
 }
 
-type Sink interface {
-	Write(point lp.CCMessage) error // Write metric to the sink
-	Flush() error                   // Flush buffered metrics
-	Close()                         // Close / finish metric sink
-	Name() string                   // Name of the metric sink
-}
-
 // Name returns the name of the metric sink
 func (s *sink) Name() string {
 	return s.name
