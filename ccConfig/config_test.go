@@ -9,6 +9,7 @@ import (
 	"sync"
 	"testing"
 
+	cclog "github.com/ClusterCockpit/cc-lib/ccLogger"
 	"github.com/ClusterCockpit/cc-lib/sinks"
 )
 
@@ -17,6 +18,7 @@ type mainConfig struct {
 }
 
 func TestInit(t *testing.T) {
+	cclog.Init("debug", true)
 	fn := "./testdata/config.json"
 	Init(fn)
 	n := len(keys)
@@ -45,6 +47,7 @@ func TestInit(t *testing.T) {
 }
 
 func TestInitAll(t *testing.T) {
+	cclog.Init("debug", true)
 	fn := "./testdata/configAll.json"
 	Init(fn)
 	n := len(keys)

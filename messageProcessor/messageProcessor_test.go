@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	cclog "github.com/ClusterCockpit/cc-lib/ccLogger"
 	lp "github.com/ClusterCockpit/cc-lib/ccMessage"
 )
 
@@ -329,7 +328,6 @@ func TestConfigList(t *testing.T) {
 			}
 			out, err := mp.ProcessMessage(m)
 			if err != nil && !c.errors {
-				cclog.SetDebug()
 				mp.ProcessMessage(m)
 				t.Error(err.Error())
 				return
@@ -346,7 +344,6 @@ func TestConfigList(t *testing.T) {
 				if err := c.check(out); err != nil {
 					t.Errorf("check failed with %v", err.Error())
 					t.Log("Rerun with debugging")
-					cclog.SetDebug()
 					mp.ProcessMessage(m)
 					return
 				}
