@@ -1,2 +1,7 @@
 # cc-lib
-Common golang packages
+
+Common ClusterCockpit golang packages:
+
+- `ccConfig`
+- `ccLogger`
+- `ccMessages`
