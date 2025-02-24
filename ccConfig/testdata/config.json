@@ -1,0 +1,8 @@
+{
+  "receivers-file": "./testdata/receivers.json",
+  "sinks-file": "./testdata/sinks.json",
+  "optimizer-file": "./testdata/optimizer.json",
+  "main": {
+    "interval": "10s"
+  }
+}
