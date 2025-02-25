@@ -1,9 +1,12 @@
+// Copyright (C) NHR@FAU, University Erlangen-Nuremberg.
+// All rights reserved. This file is part of cc-lib.
+// Use of this source code is governed by a MIT-style
+// license that can be found in the LICENSE file.
 package receivers
 
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"sync"
 
 	cclog "github.com/ClusterCockpit/cc-lib/ccLogger"
@@ -22,34 +25,34 @@ type receiveManager struct {
 }
 
 type ReceiveManager interface {
-	Init(wg *sync.WaitGroup, receiverConfigFile string) error
+	Init(wg *sync.WaitGroup, receiverConfig json.RawMessage) error
 	AddInput(name string, rawConfig json.RawMessage) error
 	AddOutput(output chan lp.CCMessage)
 	Start()
 	Close()
 }
 
-func (rm *receiveManager) Init(wg *sync.WaitGroup, receiverConfigFile string) error {
+func (rm *receiveManager) Init(wg *sync.WaitGroup, receiverConfig json.RawMessage) error {
 	// Initialize struct fields
 	rm.inputs = make([]Receiver, 0)
 	rm.output = nil
 	rm.config = make([]json.RawMessage, 0)
 
-	configFile, err := os.Open(receiverConfigFile)
-	if err != nil {
-		cclog.ComponentError("ReceiveManager", err.Error())
-		return err
-	}
-	defer configFile.Close()
-	jsonParser := json.NewDecoder(configFile)
+	// Parse config
 	var rawConfigs map[string]json.RawMessage
-	err = jsonParser.Decode(&rawConfigs)
+	err := json.Unmarshal(receiverConfig, (&rawConfigs))
 	if err != nil {
 		cclog.ComponentError("ReceiveManager", err.Error())
 		return err
 	}
+
+	// Start receivers
 	for name, raw := range rawConfigs {
-		rm.AddInput(name, raw)
+		err = rm.AddInput(name, raw)
+		if err != nil {
+			cclog.ComponentError("ReceiveManager", err)
+			continue
+		}
 	}
 
 	return nil
@@ -110,9 +113,9 @@ func (rm *receiveManager) Close() {
 	cclog.ComponentDebug("ReceiveManager", "DONE")
 }
 
-func New(wg *sync.WaitGroup, receiverConfigFile string) (ReceiveManager, error) {
+func New(wg *sync.WaitGroup, receiverConfig json.RawMessage) (ReceiveManager, error) {
 	r := new(receiveManager)
-	err := r.Init(wg, receiverConfigFile)
+	err := r.Init(wg, receiverConfig)
 	if err != nil {
 		return nil, err
 	}
