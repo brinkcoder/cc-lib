@@ -1,6 +1,6 @@
 module github.com/ClusterCockpit/cc-lib
 
-go 1.23.4
+go 1.21.0
 
 require (
 	github.com/ClusterCockpit/cc-backend v1.4.2
