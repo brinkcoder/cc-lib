@@ -7,7 +7,6 @@ package ccconfig
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -55,7 +54,6 @@ func Init(filename string) {
 }
 
 func GetPackageConfig(key string) json.RawMessage {
-	fmt.Printf("MAP: %+v \n", keys)
 	if val, ok := keys[key]; ok {
 		return val
 	}
