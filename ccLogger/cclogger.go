@@ -83,23 +83,52 @@ func Init(lvl string, logdate bool) {
 	loglevel = lvl
 }
 
-/* PRINT */
+/* HELPER */
 
-// Private helper
+func Loglevel() string {
+	return loglevel
+}
+
+/* PRIVATE HELPER */
+
+// Return unformatted string
 func printStr(v ...interface{}) string {
 	return fmt.Sprint(v...)
 }
 
-// Uses Info() -> If errorpath required at some point:
-// Will need own writer with 'Output(2, out)' to correctly render path
+// Return formatted string
+func printfStr(format string, v ...interface{}) string {
+	return fmt.Sprintf(format, v...)
+}
+
+/* PRINT */
+
+// Prints to STDOUT without string formatting; application continues.
+// Used for special cases not requiring log information like date or location.
 func Print(v ...interface{}) {
-	Info(v...)
+	fmt.Fprint(os.Stdout, v...)
+}
+
+// Prints to STDOUT without string formatting; application exits with error code 0.
+// Used for exiting succesfully with message after expected outcome, e.g. successful single-call application runs.
+func Exit(v ...interface{}) {
+	fmt.Fprint(os.Stdout, v...)
+	os.Exit(0)
+}
+
+// Prints to STDOUT without string formatting; application exits with error code 1.
+// Used for terminating with message after to be expected errors, e.g. wrong arguments or during init().
+func Abort(v ...interface{}) {
+	fmt.Fprint(os.Stdout, v...)
+	os.Exit(1)
 }
 
 func ComponentPrint(component string, v ...interface{}) {
 	InfoLog.Print(fmt.Sprintf("[%s] ", component), v)
 }
 
+// Prints to DEBUG writer without string formatting; application continues.
+// Used for logging additional information, primarily for development.
 func Debug(v ...interface{}) {
 	DebugLog.Output(2, printStr(v...))
 }
@@ -108,14 +137,20 @@ func ComponentDebug(component string, v ...interface{}) {
 	DebugLog.Print(fmt.Sprintf("[%s] ", component), v)
 }
 
+// Prints to INFO writer without string formatting; application continues.
+// Used for logging additional information, e.g. notable returns or common fail-cases.
 func Info(v ...interface{}) {
 	InfoLog.Output(2, printStr(v...))
 }
 
+// Prints to WARNING writer without string formatting; application continues.
+// Used for logging important information, e.g. uncommon edge-cases or administration related information.
 func Warn(v ...interface{}) {
 	WarnLog.Output(2, printStr(v...))
 }
 
+// Prints to ERROR writer without string formatting; application continues.
+// Used for logging errors, but code still can return default(s) or nil.
 func Error(v ...interface{}) {
 	ErrLog.Output(2, printStr(v...))
 }
@@ -124,80 +159,74 @@ func ComponentError(component string, v ...interface{}) {
 	ErrLog.Print(fmt.Sprintf("[%s] ", component), v)
 }
 
-// Writes panic stacktrace, but keeps application alive
-func Panic(v ...interface{}) {
-	ErrLog.Output(2, printStr(v...))
-	panic("Panic triggered ...")
-}
-
-func Crit(v ...interface{}) {
-	CritLog.Output(2, printStr(v...))
-}
-
-// Writes critical log, stops application
+// Prints to CRITICAL writer without string formatting; application exits with error code 1.
+// Used for terminating on unexpected errors with date and code location.
 func Fatal(v ...interface{}) {
 	CritLog.Output(2, printStr(v...))
 	os.Exit(1)
 }
 
+// Prints to PANIC function without string formatting; application exits with panic.
+// Used for terminating on unexpected errors with stacktrace.
+func Panic(v ...interface{}) {
+	panic(printStr(v...))
+}
+
 /* PRINT FORMAT*/
 
-// Private helper
-func printfStr(format string, v ...interface{}) string {
-	return fmt.Sprintf(format, v...)
-}
-
-// Uses Infof() -> If errorpath required at some point:
-// Will need own writer with 'Output(2, out)' to correctly render path
+// Prints to STDOUT with string formatting; application continues.
+// Used for special cases not requiring log information like date or location.
 func Printf(format string, v ...interface{}) {
-	Infof(format, v...)
+	fmt.Fprintf(os.Stdout, format, v...)
 }
 
+// Prints to STDOUT with string formatting; application exits with error code 0.
+// Used for exiting succesfully with message after expected outcome, e.g. successful single-call application runs.
+func Exitf(format string, v ...interface{}) {
+	fmt.Fprintf(os.Stdout, format, v...)
+	os.Exit(0)
+}
+
+// Prints to STDOUT with string formatting; application exits with error code 1.
+// Used for terminating with message after to be expected errors, e.g. wrong arguments or during init().
+func Abortf(format string, v ...interface{}) {
+	fmt.Fprintf(os.Stdout, format, v...)
+	os.Exit(1)
+}
+
+// Prints to DEBUG writer with string formatting; application continues.
+// Used for logging additional information, primarily for development.
 func Debugf(format string, v ...interface{}) {
 	DebugLog.Output(2, printfStr(format, v...))
 }
 
+// Prints to INFO writer with string formatting; application continues.
+// Used for logging additional information, e.g. notable returns or common fail-cases.
 func Infof(format string, v ...interface{}) {
 	InfoLog.Output(2, printfStr(format, v...))
 }
 
+// Prints to WARNING writer with string formatting; application continues.
+// Used for logging important information, e.g. uncommon edge-cases or administration related information.
 func Warnf(format string, v ...interface{}) {
 	WarnLog.Output(2, printfStr(format, v...))
 }
 
+// Prints to ERROR writer with string formatting; application continues.
+// Used for logging errors, but code still can return default(s) or nil.
 func Errorf(format string, v ...interface{}) {
 	ErrLog.Output(2, printfStr(format, v...))
 }
 
-// Writes panic stacktrace, but keeps application alive
-func Panicf(format string, v ...interface{}) {
-	ErrLog.Output(2, printfStr(format, v...))
-	panic("Panic triggered ...")
-}
-
-func Critf(format string, v ...interface{}) {
-	CritLog.Output(2, printfStr(format, v...))
-}
-
-// Writes crit log, stops application
+// Prints to CRITICAL writer with string formatting; application exits with error code 1.
+// Used for terminating on unexpected errors with date and code location.
 func Fatalf(format string, v ...interface{}) {
 	CritLog.Output(2, printfStr(format, v...))
 	os.Exit(1)
 }
 
-func Loglevel() string {
-	return loglevel
+// Prints to PANIC function with string formatting; application exits with panic.
+// Used for terminating on unexpected errors with stacktrace.
+func Panicf(format string, v ...interface{}) {
+	panic(printfStr(format, v...))
 }
-
-/* SPECIAL */
-
-// func Finfof(w io.Writer, format string, v ...interface{}) {
-// 	if w != io.Discard {
-// 		if logDateTime {
-// 			currentTime := time.Now()
-// 			fmt.Fprintf(InfoWriter, currentTime.String()+InfoPrefix+format+"\n", v...)
-// 		} else {
-// 			fmt.Fprintf(InfoWriter, InfoPrefix+format+"\n", v...)
-// 		}
-// 	}
-// }
