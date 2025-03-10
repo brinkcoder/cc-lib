@@ -832,7 +832,7 @@ func (mp *messageProcessor) ProcessMessage(m lp.CCMessage) (lp.CCMessage, error)
 			}
 		case STAGENAME_ADD_TAG:
 			if len(mp.addTagsIf) > 0 {
-				cclog.ComponentDebug("MessageProcessor", "Adding tags")
+				// cclog.ComponentDebug("MessageProcessor", "Adding tags")
 				_, err = addTagIf(out, &params, &mp.addTagsIf)
 				if err != nil {
 					return out, fmt.Errorf("failed to evaluate: %v", err.Error())
